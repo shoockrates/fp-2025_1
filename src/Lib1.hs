@@ -133,9 +133,9 @@ examples =
     AddTable 1 "High Roller Roulette" 1 100.0 5000.0 (Just 1),
     AddRound 1 1 Nothing (Just Active),
     PlaceBet 1 1 1 500.0 Red Nothing 1,
-    AddRound 2 1 (Just 1) (Just Active), -- Sub-round for side bets
-    PlaceBet 2 1 1 100.0 Odd (Just 1) 2, -- Side bet on the main bet
-    PlaceBet 3 1 1 200.0 Straight (Just 1) 1, -- Another component of compound bet
+    AddRound 2 1 (Just 1) (Just Active),
+    PlaceBet 2 1 1 100.0 Odd (Just 1) 2,
+    PlaceBet 3 1 1 200.0 Straight (Just 1) 1,
     ResolveBet 1 (Win 1000.0),
     ResolveBet 2 (Win 200.0),
     ResolveBet 3 Lose,
