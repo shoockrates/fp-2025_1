@@ -76,7 +76,8 @@ This Domain Specific Language (DSL) is designed for managing casino operations. 
 <add_player> ::= "add" "player" <player_id> <string> <double>
 
 <add_game> ::= "add" "game" <game_id> <string> <game_type>
-
+<player_list> = <player>|<plyer> <player_list>
+<add_to_table> ::= "addGuysToTable " <player_list> <table>
 <add_table> ::= "add" "table" <table_id> <string> <game_id> <double> <double> <dealer_ref>
 
 <dealer_ref> ::= ε | "dealer" <dealer_id>
