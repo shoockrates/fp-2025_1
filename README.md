@@ -43,39 +43,71 @@ This Domain Specific Language (DSL) is designed for managing casino operations. 
 
 ## BNF Grammar
 
+### 🔄 **Recursive Grammar Rules** *(Look for self-referencing rules!)*
+
 ```bnf
+<!-- MAIN COMMAND STRUCTURE -->
 <command> ::= <add_player> | <add_game> | <add_table> | <place_bet> | <add_round> | 
               <resolve_bet> | <add_dealer> | <deposit> | <withdraw> | <set_limit> | 
               <show_command> | <remove_player> | <find_player> | <dump_examples>
 
-<add_player> ::= "add" "player" <integer> <string> <double>
+<!-- 🔄 RECURSIVE BET STRUCTURE: Bets can reference other bets as parents -->
+<place_bet> ::= "place" "bet" <bet_id> "player" <player_id> "table" <table_id> 
+                "amount" <double> "type" <bet_type> <parent_bet_ref> "round" <round_id>
 
-<add_game> ::= "add" "game" <integer> <string> <game_type>
+<parent_bet_ref> ::= ε                          <!-- No parent (root bet) -->
+                  | "parent" <bet_id>           <!-- References another <place_bet> → RECURSION! -->
 
-<add_table> ::= "add" "table" <integer> <string> <integer> <double> <double> ["dealer" <integer>]
+<!-- 🔄 RECURSIVE ROUND STRUCTURE: Rounds can contain sub-rounds -->
+<add_round> ::= "add" "round" <round_id> "table" <table_id> <parent_round_ref> <round_status_opt>
 
-<place_bet> ::= "place" "bet" <integer> "player" <integer> "table" <integer> 
-                "amount" <double> "type" <bet_type> ["parent" <integer>] "round" <integer>
+<parent_round_ref> ::= ε                        <!-- No parent (root round) -->
+                    | "parent" <round_id>       <!-- References another <add_round> → RECURSION! -->
 
-<add_round> ::= "add" "round" <integer> "table" <integer> ["parent" <integer>] ["status" <round_status>]
+<!-- 🔄 RECURSIVE PLAYER DATABASE STRUCTURE (from Haskell data types) -->
+<player_database> ::= <empty_db>                               <!-- Base case -->
+                   | <player_node> <player_database> <player_database>  <!-- Recursive case: contains two more databases -->
 
-<resolve_bet> ::= "resolve" "bet" <integer> <bet_outcome>
+<player_node> ::= "PlayerNode" <player> 
 
-<add_dealer> ::= "add" "dealer" <integer> <string> "table" <integer>
+<empty_db> ::= "EmptyDB"
 
-<deposit> ::= "deposit" "player" <integer> "amount" <double>
+<!-- BASIC COMMAND DEFINITIONS -->
+<add_player> ::= "add" "player" <player_id> <string> <double>
 
-<withdraw> ::= "withdraw" "player" <integer> "amount" <double>
+<add_game> ::= "add" "game" <game_id> <string> <game_type>
 
-<set_limit> ::= "set" "limit" "player" <integer> <limit_type> <double>
+<add_table> ::= "add" "table" <table_id> <string> <game_id> <double> <double> <dealer_ref>
+
+<dealer_ref> ::= ε | "dealer" <dealer_id>
+
+<resolve_bet> ::= "resolve" "bet" <bet_id> <bet_outcome>
+
+<add_dealer> ::= "add" "dealer" <dealer_id> <string> "table" <table_id>
+
+<deposit> ::= "deposit" "player" <player_id> "amount" <double>
+
+<withdraw> ::= "withdraw" "player" <player_id> "amount" <double>
+
+<set_limit> ::= "set" "limit" "player" <player_id> <limit_type> <double>
 
 <find_player> ::= "find" "player" "name" <string>
 
 <show_command> ::= "show" ("players" | "games" | "tables" | "bets" | "rounds")
 
-<remove_player> ::= "remove" "player" <integer>
+<remove_player> ::= "remove" "player" <player_id>
 
 <dump_examples> ::= "dump" "examples"
+
+<!-- TERMINAL SYMBOLS -->
+<bet_id> ::= <integer>
+<player_id> ::= <integer>  
+<table_id> ::= <integer>
+<round_id> ::= <integer>
+<game_id> ::= <integer>
+<dealer_id> ::= <integer>
+
+<round_status_opt> ::= ε | "status" <round_status>
 
 <game_type> ::= "Blackjack" | "Roulette" | "Poker" | "Baccarat" | "Slots"
 
@@ -87,6 +119,17 @@ This Domain Specific Language (DSL) is designed for managing casino operations. 
 
 <limit_type> ::= "DailyLimit" | "WeeklyLimit" | "MonthlyLimit"
 ```
+
+### 🔍 **How to Spot Recursion in BNF:**
+
+1. **Self-referencing rules**: Look for rules where the left-hand side appears on the right-hand side
+2. **Cross-referencing rules**: Rules that reference other rules of the same "type" 
+3. **Optional parent patterns**: Rules with optional references to IDs of the same entity type
+
+**Examples in this grammar:**
+- `<parent_bet_ref>` can contain `<bet_id>` which refers back to another `<place_bet>` command
+- `<parent_round_ref>` can contain `<round_id>` which refers back to another `<add_round>` command  
+- `<player_database>` directly contains two more `<player_database>` instances
 
 ## Command Examples
 
