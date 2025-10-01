@@ -98,10 +98,9 @@ This Domain Specific Language (DSL) is designed for managing casino operations. 
 
 <status> ::= "Open" | "Closed" | "Resolved"               
 
-<string>       ::= <char>
-                | <char> <string>
+<string> ::= <char> | <char> <string>
 
-<char>         ::= [a-z]
+<char> ::= [a-z]
 
 <dumpable> ::= "Examples"                                 
 
