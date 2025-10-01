@@ -43,89 +43,63 @@ This Domain Specific Language (DSL) is designed for managing casino operations. 
 
 ## BNF Grammar
 
-### 🔄 **Recursive Grammar Rules** *(Look for self-referencing rules!)*
 
 ```bnf
 <!-- MAIN COMMAND STRUCTURE -->
-<command> ::= <add_player> | <add_game> | <add_table> | <place_bet> | <add_round> | 
-              <resolve_bet> | <add_dealer> | <deposit> | <withdraw> | <set_limit> | 
-              <show_command> | <remove_player> | <find_player> | <dump_examples>
+<command> ::= "AddPlayer" <player>                         
+            | "AddGame" <game>                           
+            | "AddTable" <table>                         
+            | "PlaceBet" <player> <gameRef> <amount>     
+            | "AddRound" <gameRef> <round>               
+            | "ResolveBet" <player> <gameRef> <roundRef> 
+            | "AddDealer" <dealer>                       
+            | "Deposit" <player> <amount>                
+            | "Withdraw" <player> <amount>               
+            | "SetLimit" <player> <amount>               
+            | "ShowCommand" <command>                    
+            | "RemovePlayer" <player>                    
+            | "FindPlayer" <name>                        
+            | "Sequence" <command> <command>             
+            | "Dump" <dumpable>                          
 
-<!-- 🔄 RECURSIVE BET STRUCTURE: Bets can reference other bets as parents -->
-<place_bet> ::= "place" "bet" <bet_id> "player" <player_id> "table" <table_id> 
-                "amount" <double> "type" <bet_type> <parent_bet_ref> "round" <round_id>
+<player> ::= "Player" <playerId> <name> <balance>        
 
-<parent_bet_ref> ::= ε                          <!-- No parent (root bet) -->
-                  | "parent" <bet_id>           <!-- References another <place_bet> → RECURSION! -->
+<dealer> ::= "Dealer" <name> <experience>                
 
-<!-- 🔄 RECURSIVE ROUND STRUCTURE: Rounds can contain sub-rounds -->
-<add_round> ::= "add" "round" <round_id> "table" <table_id> <parent_round_ref> <round_status_opt>
+<game> ::= "Game" <gameId> <name> <tables>               
+<gameRef> ::= <gameId>                                    
 
-<parent_round_ref> ::= ε                        <!-- No parent (root round) -->
-                    | "parent" <round_id>       <!-- References another <add_round> → RECURSION! -->
+<table> ::= "Table" <tableId> <players>                   
+<tableRef> ::= <tableId>                                  
 
-<!-- 🔄 RECURSIVE PLAYER DATABASE STRUCTURE (from Haskell data types) -->
-<player_database> ::= <empty_db>                               <!-- Base case -->
-                   | <player_node> <player_database> <player_database>  <!-- Recursive case: contains two more databases -->
+<round> ::= "Round" <roundId> <status>                    
+<roundRef> ::= <roundId>                                  
 
-<player_node> ::= "PlayerNode" <player> 
+<players> ::= "[" <playerList> "]"                        
+<playerList> ::= <player> | <player> "," <playerList>     
 
-<empty_db> ::= "EmptyDB"
+<name> ::= <string>                                       
+<playerId> ::= <integer>                                  
+<gameId> ::= <integer>                                    
+<tableId> ::= <integer>                                   
+<roundId> ::= <integer>                                   
 
-<!-- BASIC COMMAND DEFINITIONS -->
-<add_player> ::= "add" "player" <player_id> <string> <double>
+<balance> ::= <integer>                                   
+<experience> ::= <integer>                                
+<amount> ::= <integer>
+<integer> ::= <digit> | <digit> <integer>
 
-<add_game> ::= "add" "game" <game_id> <string> <game_type>
-<add_to_table> ::= "addGuysToTable " <player_list> <table>
-<add_table> ::= "add" "table" <table_id> <string> <game_id> <double> <double> <dealer_ref>
+<digit> ::= [0-9]   
 
-<!-- RECURSION -->
-<players> ::= "[" <playerList> "]"
+<status> ::= "Open" | "Closed" | "Resolved"               
 
-<playerList> ::= <player> | <player> "," <playerList>
+<string>       ::= <char>
+                | <char> <string>
 
+<char>         ::= [a-z]
 
+<dumpable> ::= "Examples"                                 
 
-
-<dealer_ref> ::= ε | "dealer" <dealer_id>
-
-<resolve_bet> ::= "resolve" "bet" <bet_id> <bet_outcome>
-
-<add_dealer> ::= "add" "dealer" <dealer_id> <string> "table" <table_id>
-
-<deposit> ::= "deposit" "player" <player_id> "amount" <double>
-
-<withdraw> ::= "withdraw" "player" <player_id> "amount" <double>
-
-<set_limit> ::= "set" "limit" "player" <player_id> <limit_type> <double>
-
-<find_player> ::= "find" "player" "name" <string>
-
-<show_command> ::= "show" ("players" | "games" | "tables" | "bets" | "rounds")
-
-<remove_player> ::= "remove" "player" <player_id>
-
-<dump_examples> ::= "dump" "examples"
-
-<!-- TERMINAL SYMBOLS -->
-<bet_id> ::= <integer>
-<player_id> ::= <integer>  
-<table_id> ::= <integer>
-<round_id> ::= <integer>
-<game_id> ::= <integer>
-<dealer_id> ::= <integer>
-
-<round_status_opt> ::= ε | "status" <round_status>
-
-<game_type> ::= "Blackjack" | "Roulette" | "Poker" | "Baccarat" | "Slots"
-
-<bet_type> ::= "Straight" | "Split" | "Corner" | "Red" | "Black" | "Odd" | "Even" | "Pass" | "DontPass"
-
-<bet_outcome> ::= "win" <double> | "lose" | "push"
-
-<round_status> ::= "Active" | "Finished" | "Cancelled"
-
-<limit_type> ::= "DailyLimit" | "WeeklyLimit" | "MonthlyLimit"
 ```
 
 ### 🔍 **How to Spot Recursion in BNF:**
