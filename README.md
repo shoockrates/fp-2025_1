@@ -87,6 +87,12 @@ This Domain Specific Language (DSL) is designed for managing casino operations. 
 <balance> ::= <integer>                                   
 <experience> ::= <integer>                                
 <amount> ::= <integer>
+
+<tables> ::= "[" <tableList> "]"
+
+<tableList> ::= <table> | <table> "," <tableList>
+
+
 <integer> ::= <digit> | <digit> <integer>
 
 <digit> ::= [0-9]   
