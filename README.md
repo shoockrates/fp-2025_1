@@ -45,7 +45,6 @@ This Domain Specific Language (DSL) is designed for managing casino operations. 
 
 
 ```bnf
-<!-- MAIN COMMAND STRUCTURE -->
 <command> ::= "AddPlayer" <player>                         
             | "AddGame" <game>                           
             | "AddTable" <table>                         
